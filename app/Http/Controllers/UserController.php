@@ -39,7 +39,7 @@ Class UserController extends Controller {
     }
 
     public function show($id){
-        $user = User::where('userid', $id)->first();
+        $user = User::where('user_id', $id)->first();
         if($user){
             return $this->successResponse($user);
     }
@@ -48,23 +48,25 @@ Class UserController extends Controller {
         }
     }
 
-    public function update(Request $request, $id){ 
+    public function update(Request $request, $id) { 
         $rules = [
             'username' => 'required|max:20',
-            'password' => 'required|max:20'
+            'password' => 'required|max:20',
+            'gender' => 'required|in:Male,Female'
         ];
-
+    
         $this->validate($request, $rules);
-
         $user = User::findOrFail($id);
+    
         $user->fill($request->all());
+    
+        if ($user->isClean()) {
+            return $this->errorResponse("At least one value must change", 
+            Response::HTTP_UNPROCESSABLE_ENTITY);
+        } 
 
-        if ($user->isClean()){
-            return Response()->json("At least one value must change", 403);
-        } else {
             $user->save();
             return $this->successResponse($user);
-        }
     }
 
     public function delete($id){ 
